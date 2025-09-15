@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trình tải Video YouTube - MP4/MP3</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            color: white;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .input-group {
+            display: flex;
+            margin-bottom: 25px;
+        }
+        
+        #url-input {
+            flex: 1;
+            padding: 18px;
+            border: 2px solid #ddd;
+            border-radius: 8px 0 0 8px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        #url-input:focus {
+            border-color: #ff4b2b;
+            box-shadow: 0 0 0 3px rgba(255, 75, 43, 0.2);
+        }
+        
+        #fetch-btn {
+            padding: 0 25px;
+            background-color: #ff4b2b;
+            color: white;
+            border: none;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+        
+        #fetch-btn:hover {
+            background-color: #ff416c;
+        }
+        
+        #fetch-btn i {
+            margin-right: 8px;
+        }
+        
+        .format-options {
+            display: none;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        
+        .format-title {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            color: #2c5364;
+            font-weight: 600;
+        }
+        
+        .format-buttons {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .format-btn {
+            min-width: 180px;
+            padding: 18px 25px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .format-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .format-btn.mp4 {
+            border-color: #ff4b2b;
+            color: #ff4b2b;
+        }
+        
+        .format-btn.mp4:hover {
+            background-color: #ff4b2b;
+            color: white;
+        }
+        
+        .format-btn.mp3 {
+            border-color: #2193b0;
+            color: #2193b0;
+        }
+        
+        .format-btn.mp3:hover {
+            background-color: #2193b0;
+            color: white;
+        }
+        
+        .format-btn i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .loader {
+            display: none;
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .loader-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #ff4b2b;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .result {
+            display: none;
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+        
+        .video-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            text-align: left;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .thumbnail {
+            width: 200px;
+            height: 120px;
+            border-radius: 8px;
+            margin-right: 20px;
+            object-fit: cover;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .video-details {
+            flex: 1;
+        }
+        
+        .video-title {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2c5364;
+        }
+        
+        .video-duration {
+            color: #666;
+            font-size: 1rem;
+        }
+        
+        .error {
+            display: none;
+            color: #d32f2f;
+            text-align: center;
+            padding: 18px;
+            background-color: #ffebee;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 5px solid #d32f2f;
+        }
+        
+        .instructions {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-top: 30px;
+        }
+        
+        .instructions h2 {
+            color: #ff4b2b;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.8rem;
+        }
+        
+        .step {
+            display: flex;
+            margin-bottom: 20px;
+            align-items: flex-start;
+        }
+        
+        .step-number {
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            flex-shrink: 0;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .step-text {
+            flex: 1;
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: white;
+            font-size: 1rem;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 0 0 15px 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .input-group {
+                flex-direction: column;
+            }
+            
+            #url-input {
+                border-radius: 8px;
+                margin-bottom: 15px;
+            }
+            
+            #fetch-btn {
+                border-radius: 8px;
+                padding: 15px;
+                justify-content: center;
+            }
+            
+            .video-info {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .thumbnail {
+                margin-right: 0;
+                margin-bottom: 20px;
+                width: 100%;
+                max-width: 320px;
+                height: auto;
+            }
+            
+            .format-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .format-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-download"></i> Trình tải Video YouTube</h1>
+            <p class="description">Tải video YouTube về máy dưới dạng MP4 hoặc MP3 với yt-dlp</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="input-group">
+                <input type="text" id="url-input" placeholder="Dán link YouTube vào đây (ví dụ: https://www.youtube.com/watch?v=...)">
+                <button id="fetch-btn"><i class="fas fa-search"></i> Tải về</button>
+            </div>
+            
+            <div class="error" id="error-message">
+                <i class="fas fa-exclamation-circle"></i> <span id="error-text"></span>
+            </div>
+            
+            <div class="loader" id="loader">
+                <div class="loader-spinner"></div>
+                <p>Đang xử lý video, vui lòng chờ...</p>
+            </div>
+            
+            <div class="format-options" id="format-options">
+                <h3 class="format-title">Chọn định dạng tải về:</h3>
+                <div class="format-buttons">
+                    <button class="format-btn mp4" id="mp4-btn">
+                        <i class="fas fa-film"></i> MP4 Video
+                    </button>
+                    <button class="format-btn mp3" id="mp3-btn">
+                        <i class="fas fa-music"></i> MP3 Audio
+                    </button>
+                </div>
+            </div>
+            
+            <div class="result" id="result">
+                <div class="video-info">
+                    <img id="thumbnail" class="thumbnail" src="" alt="Video thumbnail">
+                    <div class="video-details">
+                        <h3 id="video-title" class="video-title"></h3>
+                        <p id="video-duration" class="video-duration"></p>
+                    </div>
+                </div>
+                <a id="download-link" class="format-btn mp4" download>
+                    <i class="fas fa-download"></i> Tải về ngay
+                </a>
+            </div>
+            
+            <div class="instructions">
+                <h2><i class="fas fa-graduation-cap"></i> Hướng dẫn sử dụng</h2>
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">Sao chép URL video YouTube từ thanh địa chỉ trình duyệt</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">Dán URL vào ô phía trên và nhấn nút "Tải về"</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">Chọn định dạng bạn muốn tải (MP4 cho video hoặc MP3 cho audio)</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-text">Nhấn vào nút "Tải về ngay" để tải video/audio về máy</div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p><i class="fas fa-exclamation-triangle"></i> Lưu ý: Trang web này chỉ phục vụ mục đích học tập và demo. Hãy tôn trọng bản quyền của người sáng tạo nội dung.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlInput = document.getElementById('url-input');
+            const fetchBtn = document.getElementById('fetch-btn');
+            const formatOptions = document.getElementById('format-options');
+            const loader = document.getElementById('loader');
+            const result = document.getElementById('result');
+            const errorMessage = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            const mp4Btn = document.getElementById('mp4-btn');
+            const mp3Btn = document.getElementById('mp3-btn');
+            const thumbnail = document.getElementById('thumbnail');
+            const videoTitle = document.getElementById('video-title');
+            const videoDuration = document.getElementById('video-duration');
+            const downloadLink = document.getElementById('download-link');
+            
+            // Hàm hiển thị lỗi
+            function showError(message) {
+                errorText.textContent = message;
+                errorMessage.style.display = 'block';
+                loader.style.display = 'none';
+                
+                // Ẩn thông báo lỗi sau 5 giây
+                setTimeout(() => {
+                    errorMessage.style.display = 'none';
+                }, 8000);
+            }
+            
+            // Hàm kiểm tra URL YouTube hợp lệ
+            function isValidYouTubeUrl(url) {
+                const pattern = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/;
+                return pattern.test(url);
+            }
+            
+            // Hàm trích xuất video ID từ URL YouTube
+            function extractVideoId(url) {
+                const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+                const match = url.match(regExp);
+                return (match && match[7].length === 11) ? match[7] : false;
+            }
+            
+            // Xử lý khi nhấn nút Tải về
+            fetchBtn.addEventListener('click', function() {
+                const youtubeUrl = urlInput.value.trim();
+                
+                if (!youtubeUrl) {
+                    showError('Vui lòng nhập URL video YouTube');
+                    return;
+                }
+                
+                if (!isValidYouTubeUrl(youtubeUrl)) {
+                    showError('URL YouTube không hợp lệ. Vui lòng kiểm tra lại. URL hợp lệ ví dụ: https://www.youtube.com/watch?v=abcdefghijk');
+                    return;
+                }
+                
+                const videoId = extractVideoId(youtubeUrl);
+                
+                if (!videoId) {
+                    showError('Không thể xác định video ID từ URL đã nhập. Vui lòng kiểm tra lại URL.');
+                    return;
+                }
+                
+                // Hiển thị loader
+                loader.style.display = 'block';
+                formatOptions.style.display = 'none';
+                result.style.display = 'none';
+                errorMessage.style.display = 'none';
+                
+                // Giả lập quá trình tải thông tin video
+                setTimeout(() => {
+                    // Ẩn loader
+                    loader.style.display = 'none';
+                    
+                    // Hiển thị thông tin video (giả lập)
+                    thumbnail.src = `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`;
+                    videoTitle.textContent = "Video YouTube (Kết nối với backend để tải thực sự)";
+                    videoDuration.textContent = "Thời lượng: 5:20 | Định dạng: MP4/MP3";
+                    
+                    // Hiển thị các tùy chọn định dạng
+                    formatOptions.style.display = 'block';
+                    
+                    // Lưu videoId để sử dụng sau
+                    formatOptions.setAttribute('data-video-id', videoId);
+                    formatOptions.setAttribute('data-video-url', youtubeUrl);
+                }, 2000);
+            });
+            
+            // Xử lý khi chọn định dạng MP4
+            mp4Btn.addEventListener('click', function() {
+                const videoUrl = formatOptions.getAttribute('data-video-url');
+                
+                if (!videoUrl) {
+                    showError('Không tìm thấy thông tin video');
+                    return;
+                }
+                
+                // Kết nối với backend (thay thế URL bằng backend thực tế của bạn)
+                downloadLink.href = `http://localhost:5000/download?url=${encodeURIComponent(videoUrl)}&format=mp4`;
+                downloadLink.setAttribute('download', `youtube_video.mp4`);
+                downloadLink.className = 'format-btn mp4';
+                
+                // Hiển thị kết quả
+                result.style.display = 'block';
+                
+                // Cuộn đến kết quả
+                downloadLink.scrollIntoView({ behavior: 'smooth' });
+            });
+            
+            // Xử lý khi chọn định dạng MP3
+            mp3Btn.addEventListener('click', function() {
+                const videoUrl = formatOptions.getAttribute('data-video-url');
+                
+                if (!videoUrl) {
+                    showError('Không tìm thấy thông tin video');
+                    return;
+                }
+                
+                // Kết nối với backend (thay thế URL bằng backend thực tế của bạn)
+                downloadLink.href = `http://localhost:5000/download?url=${encodeURIComponent(videoUrl)}&format=mp3`;
+                downloadLink.setAttribute('download', `youtube_audio.mp3`);
+                downloadLink.className = 'format-btn mp3';
+                
+                // Hiển thị kết quả
+                result.style.display = 'block';
+                
+                // Cuộn đến kết quả
+                downloadLink.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    </script>
+</body>
+</html>
